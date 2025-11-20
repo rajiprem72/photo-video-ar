@@ -8,56 +8,57 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; }
-      video { display: none; } /* hide raw video */
+      body { margin: 0; overflow: hidden; background: #000; }
+      video { display: none; }
     </style>
   </head>
 
   <body>
-    <!-- Preloaded Video Asset -->
+    <!-- Video Asset (CORS enabled) -->
     <video
       id="friendVideo"
       src="https://video.wixstatic.com/video/d36dc5_1dbeffb399f94e99861a8642feb960bf/720p/mp4/file.mp4"
       preload="auto"
+      crossorigin="anonymous"
       playsinline
       webkit-playsinline
-      crossorigin="anonymous"
     ></video>
 
-    <!-- AR Scene -->
+    <!-- AR SCENE -->
     <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind;"
+      mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
       embedded
+      renderer="colorManagement: true;"
     >
+      <!-- Camera -->
       <a-camera look-controls="enabled: false"></a-camera>
 
-      <!-- Video appears on top of the detected photo -->
+      <!-- When the image is detected, show video -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video
+          id="videoPlane"
           src="#friendVideo"
           width="1"
           height="0.56"
           position="0 0 0"
+          rotation="0 0 0"
         ></a-video>
       </a-entity>
     </a-scene>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const vid = document.getElementById("friendVideo");
+      const vid = document.getElementById("friendVideo");
 
-        // Start video on first user tap (required by some mobile browsers)
-        const startVideo = () => {
-          vid.play().catch((e) => {
-            console.log("Autoplay blocked:", e);
-          });
-        };
-
-        document.body.addEventListener("click", startVideo, { once: true });
-      });
+      // Required on iPhone & some Android browsers
+      document.body.addEventListener(
+        "click",
+        () => {
+          vid.play().catch(() => {});
+        },
+        { once: true }
+      );
     </script>
-
   </body>
 </html>
