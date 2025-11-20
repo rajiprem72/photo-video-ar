@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- MindAR + A-Frame (from official CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!-- AR Scene -->
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
+      <!-- Assets -->
+      <a-assets>
+        <!-- Your friend's video (make sure friend.mp4 exists in same folder) -->
+        <video
+          id="friendVideo"
+          src="friend.mp4"
+          preload="auto"
+          webkit-playsinline
+          playsinline
+          crossorigin="anonymous"
+        ></video>
+      </a-assets>
+
+      <!-- Camera -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- When the target image (your friend's photo) is seen, this entity appears -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- Video plane on top of the photo -->
+        <a-video
+          src="#friendVideo"
+          width="1"
+          height="0.56"
+          position="0 0 0"
+        ></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Mobile browsers need a user interaction to start video with sound
+      document.addEventListener("DOMContentLoaded", () => {
+        const vid = document.getElementById("friendVideo");
+
+        const startVideo = () => {
+          if (vid.paused) {
+            vid.play().catch((e) => {
+              console.log("Autoplay blocked:", e);
+            });
+          }
+        };
+
+        // First tap anywhere -> start video
+        document.body.addEventListener("click", startVideo, { once: true });
+      });
+    </script>
+  </body>
+</html>
