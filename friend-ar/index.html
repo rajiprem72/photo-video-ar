@@ -2,16 +2,28 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- MindAR + A-Frame (from official CDN) -->
+    <!-- MindAR + A-Frame -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
       body { margin: 0; overflow: hidden; }
+      video { display: none; } /* hide raw video */
     </style>
   </head>
+
   <body>
+    <!-- Preloaded Video Asset -->
+    <video
+      id="friendVideo"
+      src="https://video.wixstatic.com/video/d36dc5_1dbeffb399f94e99861a8642feb960bf/720p/mp4/file.mp4"
+      preload="auto"
+      playsinline
+      webkit-playsinline
+      crossorigin="anonymous"
+    ></video>
+
     <!-- AR Scene -->
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind;"
@@ -19,25 +31,10 @@
       device-orientation-permission-ui="enabled: false"
       embedded
     >
-      <!-- Assets -->
-      <a-assets>
-        <!-- Your friend's video (make sure friend.mp4 exists in same folder) -->
-        <video
-          id="friendVideo"
-          src="friend.mp4"
-          preload="auto"
-          webkit-playsinline
-          playsinline
-          crossorigin="anonymous"
-        ></video>
-      </a-assets>
+      <a-camera look-controls="enabled: false"></a-camera>
 
-      <!-- Camera -->
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-      <!-- When the target image (your friend's photo) is seen, this entity appears -->
+      <!-- Video appears on top of the detected photo -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Video plane on top of the photo -->
         <a-video
           src="#friendVideo"
           width="1"
@@ -48,21 +45,19 @@
     </a-scene>
 
     <script>
-      // Mobile browsers need a user interaction to start video with sound
       document.addEventListener("DOMContentLoaded", () => {
         const vid = document.getElementById("friendVideo");
 
+        // Start video on first user tap (required by some mobile browsers)
         const startVideo = () => {
-          if (vid.paused) {
-            vid.play().catch((e) => {
-              console.log("Autoplay blocked:", e);
-            });
-          }
+          vid.play().catch((e) => {
+            console.log("Autoplay blocked:", e);
+          });
         };
 
-        // First tap anywhere -> start video
         document.body.addEventListener("click", startVideo, { once: true });
       });
     </script>
+
   </body>
 </html>
