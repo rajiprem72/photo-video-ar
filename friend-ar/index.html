@@ -14,10 +14,10 @@
   </head>
 
   <body>
-    <!-- Video Asset (CORS enabled) -->
+    <!-- Video Asset (Hosted on GitHub, CORS enabled) -->
     <video
       id="friendVideo"
-      src="https://video.wixstatic.com/video/d36dc5_1dbeffb399f94e99861a8642feb960bf/720p/mp4/file.mp4"
+      src="https://raw.githubusercontent.com/rajiprem72/photo-video-ar/main/friend-ar/friend.mp4"
       preload="auto"
       crossorigin="anonymous"
       playsinline
@@ -35,7 +35,7 @@
       <!-- Camera -->
       <a-camera look-controls="enabled: false"></a-camera>
 
-      <!-- When the image is detected, show video -->
+      <!-- Video will appear on the detected photo -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video
           id="videoPlane"
@@ -51,7 +51,7 @@
     <script>
       const vid = document.getElementById("friendVideo");
 
-      // Required on iPhone & some Android browsers
+      // Required for mobile browsers to allow video to start
       document.body.addEventListener(
         "click",
         () => {
@@ -60,5 +60,6 @@
         { once: true }
       );
     </script>
+
   </body>
 </html>
