@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Image Scan → Video AR</title>
 
   <!-- A-Frame -->
@@ -11,37 +11,65 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    body { margin: 0; overflow: hidden; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Optional helper text */
+    #hint {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 14px;
+      opacity: 0.85;
+      z-index: 10;
+    }
   </style>
 </head>
 
 <body>
-<a-scene
-  mindar-image="imageTargetSrc: targets.mind;"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: true">
 
+<div id="hint">Point your camera at the banner</div>
+
+<a-scene
+  mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: true"
+  renderer="antialias: false; precision: mediump">
+
+  <!-- Assets -->
   <a-assets>
-    <video id="arVideo"
-           src="video.mp4"
-           preload="auto"
-           loop
-           playsinline
-           webkit-playsinline>
+    <video
+      id="arVideo"
+      src="video.mp4"
+      preload="metadata"
+      playsinline
+      webkit-playsinline
+      muted
+      crossorigin="anonymous">
     </video>
   </a-assets>
 
   <!-- Camera -->
-  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  <a-camera
+    position="0 0 0"
+    look-controls="enabled: false">
+  </a-camera>
 
   <!-- Image Target -->
-  <a-entity mindar-image-target="targetIndex: 0">
+  <a-entity id="target" mindar-image-target="targetIndex: 0">
     <a-video
       src="#arVideo"
       width="1"
       height="0.56"
       position="0 0 0"
-      rotation="0 0 0">
+      material="shader: flat"
+      playsinline>
     </a-video>
   </a-entity>
 
@@ -49,13 +77,28 @@
 
 <script>
   const video = document.querySelector("#arVideo");
+  const target = document.querySelector("#target");
+  let playTimeout = null;
 
-  document.querySelector("[mindar-image-target]").addEventListener("targetFound", () => {
-    video.play();
+  // Play video only after stable tracking
+  target.addEventListener("targetFound", () => {
+    playTimeout = setTimeout(() => {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    }, 1000); // 1 second stability delay
   });
 
-  document.querySelector("[mindar-image-target]").addEventListener("targetLost", () => {
+  // Pause video when target is lost
+  target.addEventListener("targetLost", () => {
+    clearTimeout(playTimeout);
     video.pause();
+  });
+
+  // Optional: remove hint once video starts
+  video.addEventListener("play", () => {
+    const hint = document.getElementById("hint");
+    if (hint) hint.style.display = "none";
   });
 </script>
 
