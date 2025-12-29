@@ -18,7 +18,18 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Optional helper text */
+    #tap {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      z-index: 20;
+    }
+
     #hint {
       position: fixed;
       bottom: 20px;
@@ -34,35 +45,32 @@
 
 <body>
 
+<div id="tap">👆 Tap to start AR</div>
 <div id="hint">Point your camera at the banner</div>
 
 <a-scene
+  embedded
   mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
   vr-mode-ui="enabled: false"
   device-orientation-permission-ui="enabled: true"
-  renderer="antialias: false; precision: mediump">
+  renderer="antialias: true; colorManagement: true">
 
-  <!-- Assets -->
   <a-assets>
     <video
       id="arVideo"
       src="video.mp4"
-      preload="metadata"
+      preload="auto"
+      loop
+      muted
       playsinline
       webkit-playsinline
-      muted
       crossorigin="anonymous">
     </video>
   </a-assets>
 
-  <!-- Camera -->
-  <a-camera
-    position="0 0 0"
-    look-controls="enabled: false">
-  </a-camera>
+  <a-camera look-controls="enabled: false"></a-camera>
 
-  <!-- Image Target -->
-  <a-entity id="target" mindar-image-target="targetIndex: 0">
+  <a-entity mindar-image-target="targetIndex: 0">
     <a-video
       src="#arVideo"
       width="1"
@@ -76,30 +84,29 @@
 </a-scene>
 
 <script>
-  const video = document.querySelector("#arVideo");
-  const target = document.querySelector("#target");
-  let playTimeout = null;
+  const video = document.getElementById("arVideo");
+  const tap = document.getElementById("tap");
 
-  // Play video only after stable tracking
-  target.addEventListener("targetFound", () => {
-    playTimeout = setTimeout(() => {
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-    }, 1000); // 1 second stability delay
+  // Required user gesture
+  tap.addEventListener("click", async () => {
+    tap.style.display = "none";
+    try {
+      await video.play();
+      video.pause(); // preload unlock
+    } catch(e){}
   });
 
-  // Pause video when target is lost
-  target.addEventListener("targetLost", () => {
-    clearTimeout(playTimeout);
-    video.pause();
-  });
+  document
+    .querySelector("[mindar-image-target]")
+    .addEventListener("targetFound", () => {
+      video.play().catch(()=>{});
+    });
 
-  // Optional: remove hint once video starts
-  video.addEventListener("play", () => {
-    const hint = document.getElementById("hint");
-    if (hint) hint.style.display = "none";
-  });
+  document
+    .querySelector("[mindar-image-target]")
+    .addEventListener("targetLost", () => {
+      video.pause();
+    });
 </script>
 
 </body>
