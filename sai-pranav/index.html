@@ -1,110 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Image Scan → Video AR</title>
+  <meta charset="UTF-8">
+  <title>Image Scan → Video AR</title>
 
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-<style>
-  body { margin:0; overflow:hidden; background:#000; }
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  #startAR {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    z-index: 10;
-  }
-
-  #hint {
-    position: fixed;
-    bottom: 20px;
-    width: 100%;
-    text-align: center;
-    color: white;
-    font-size: 14px;
-    z-index: 5;
-  }
-</style>
+  <style>
+    body { margin: 0; overflow: hidden; }
+  </style>
 </head>
 
 <body>
-
-<div id="startAR">👆 Tap to Start Camera</div>
-<div id="hint">Point camera at the banner</div>
-
 <a-scene
-  id="scene"
-  embedded
-  vr-mode-ui="enabled:false"
-  device-orientation-permission-ui="enabled:true"
   mindar-image="imageTargetSrc: targets.mind;"
-  renderer="antialias:true; colorManagement:true">
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: true">
 
   <a-assets>
-    <video
-      id="arVideo"
-      src="video.mp4"
-      muted
-      loop
-      playsinline
-      webkit-playsinline
-      crossorigin="anonymous">
+    <video id="arVideo"
+           src="video.mp4"
+           preload="auto"
+           loop
+           playsinline
+           webkit-playsinline>
     </video>
   </a-assets>
 
-  <a-camera look-controls="enabled:false"></a-camera>
+  <!-- Camera -->
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-  <a-entity
-  id="target"
-  mindar-image-target="targetIndex: 0"
-  position="0 0 0"
-  rotation="0 0 0">
-
-  <a-video
-    src="#arVideo"
-    width="1"
-    height="0.5625"
-    position="0 0 0"
-    material="shader: flat"
-    playsinline>
-  </a-video>
-
-</a-entity>
-
+  <!-- Image Target -->
+  <a-entity mindar-image-target="targetIndex: 0">
+    <a-video
+      src="#arVideo"
+      width="1"
+      height="0.56"
+      position="0 0 0"
+      rotation="0 0 0">
+    </a-video>
+  </a-entity>
 
 </a-scene>
 
 <script>
-  const startBtn = document.getElementById("startAR");
-  const scene = document.querySelector("a-scene");
-  const video = document.getElementById("arVideo");
-  const target = document.getElementById("target");
+  const video = document.querySelector("#arVideo");
 
-  startBtn.addEventListener("click", async () => {
-    startBtn.style.display = "none";
-
-    // Start AR & camera
-    await scene.systems["mindar-image-system"].start();
-
-    // Unlock video
-    try {
-      await video.play();
-      video.pause();
-    } catch(e){}
+  document.querySelector("[mindar-image-target]").addEventListener("targetFound", () => {
+    video.play();
   });
 
-  target.addEventListener("targetFound", () => {
-    video.play().catch(()=>{});
-  });
-
-  target.addEventListener("targetLost", () => {
+  document.querySelector("[mindar-image-target]").addEventListener("targetLost", () => {
     video.pause();
   });
 </script>
