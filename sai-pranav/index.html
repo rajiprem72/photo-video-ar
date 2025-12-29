@@ -1,112 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Image Scan → Video AR</title>
+<meta charset="UTF-8" />
+<title>Image Scan → Video AR</title>
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <!-- MindAR -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<style>
+  body { margin:0; overflow:hidden; background:#000; }
 
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #000;
-      font-family: Arial, sans-serif;
-    }
+  #startAR {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 10;
+  }
 
-    #tap {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      z-index: 20;
-    }
-
-    #hint {
-      position: fixed;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      font-size: 14px;
-      opacity: 0.85;
-      z-index: 10;
-    }
-  </style>
+  #hint {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    z-index: 5;
+  }
+</style>
 </head>
 
 <body>
 
-<div id="tap">👆 Tap to start AR</div>
-<div id="hint">Point your camera at the banner</div>
+<div id="startAR">👆 Tap to Start Camera</div>
+<div id="hint">Point camera at the banner</div>
 
 <a-scene
+  id="scene"
   embedded
-  mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: true"
-  renderer="antialias: true; colorManagement: true">
+  vr-mode-ui="enabled:false"
+  device-orientation-permission-ui="enabled:true"
+  mindar-image="imageTargetSrc: targets.mind;"
+  renderer="antialias:true; colorManagement:true">
 
   <a-assets>
     <video
       id="arVideo"
       src="video.mp4"
-      preload="auto"
-      loop
       muted
+      loop
       playsinline
       webkit-playsinline
       crossorigin="anonymous">
     </video>
   </a-assets>
 
-  <a-camera look-controls="enabled: false"></a-camera>
+  <a-camera look-controls="enabled:false"></a-camera>
 
-  <a-entity mindar-image-target="targetIndex: 0">
+  <a-entity id="target" mindar-image-target="targetIndex:0">
     <a-video
       src="#arVideo"
       width="1"
       height="0.56"
-      position="0 0 0"
-      material="shader: flat"
-      playsinline>
+      material="shader:flat"
+      position="0 0 0">
     </a-video>
   </a-entity>
 
 </a-scene>
 
 <script>
+  const startBtn = document.getElementById("startAR");
+  const scene = document.querySelector("a-scene");
   const video = document.getElementById("arVideo");
-  const tap = document.getElementById("tap");
+  const target = document.getElementById("target");
 
-  // Required user gesture
-  tap.addEventListener("click", async () => {
-    tap.style.display = "none";
+  startBtn.addEventListener("click", async () => {
+    startBtn.style.display = "none";
+
+    // Start AR & camera
+    await scene.systems["mindar-image-system"].start();
+
+    // Unlock video
     try {
       await video.play();
-      video.pause(); // preload unlock
+      video.pause();
     } catch(e){}
   });
 
-  document
-    .querySelector("[mindar-image-target]")
-    .addEventListener("targetFound", () => {
-      video.play().catch(()=>{});
-    });
+  target.addEventListener("targetFound", () => {
+    video.play().catch(()=>{});
+  });
 
-  document
-    .querySelector("[mindar-image-target]")
-    .addEventListener("targetLost", () => {
-      video.pause();
-    });
+  target.addEventListener("targetLost", () => {
+    video.pause();
+  });
 </script>
 
 </body>
